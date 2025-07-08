@@ -1,0 +1,39 @@
+﻿<Window x:Class="TetrisClient.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:TetrisClient"
+        mc:Ignorable="d"
+        Title="Tetris" Height="600" Width="800"
+        KeyDown="Window_KeyDown">
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="200" />
+        </Grid.ColumnDefinitions>
+
+        <!-- Game Area -->
+        <Border Grid.Column="0" BorderBrush="Black" BorderThickness="2" Margin="10">
+            <Canvas Name="GameCanvas" Background="#222" ClipToBounds="True" Focusable="True"/>
+        </Border>
+
+        <!-- Stats Area -->
+        <StackPanel Grid.Column="1" Margin="10">
+            <Label Content="SCORE" FontWeight="Bold" FontSize="18" Foreground="#555"/>
+            <TextBlock Name="ScoreText" Text="0" FontSize="24" Margin="0,0,0,20"/>
+
+            <Label Content="TIME" FontWeight="Bold" FontSize="18" Foreground="#555"/>
+            <TextBlock Name="TimeText" Text="2:00" FontSize="24" Margin="0,0,0,20"/>
+
+            <Label Content="NEXT" FontWeight="Bold" FontSize="18" Foreground="#555"/>
+            <Border BorderBrush="Black" BorderThickness="1" Margin="0,0,0,20" Height="100">
+                <Canvas Name="NextPieceCanvas" Background="#222"/>
+            </Border>
+
+            <Button Name="StartButton" Content="Start Game" Padding="10" FontSize="16" Click="StartButton_Click" Margin="0,0,0,10"/>
+            <Button Name="ConnectButton" Content="Connect to Server" Padding="10" FontSize="16" Click="ConnectButton_Click"/>
+        </StackPanel>
+    </Grid>
+</Window>

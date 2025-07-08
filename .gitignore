@@ -1,0 +1,31 @@
+# C++ CMake Build Artifacts
+build/
+*.obj
+*.lib
+*.dll
+*.exe
+*.ilk
+*.pdb
+
+# Visual Studio files
+.vs/
+*.suo
+*.user
+*.vcxproj.filters
+*.sln.ide
+
+# C# / .NET / Visual Studio Code
+bin/
+obj/
+.vscode/
+*.csproj.user
+*.log
+*.cache
+
+# Package Manager files
+packages/
+
+# OS generated files
+.DS_Store
+.Trashes
+thumbs.db
