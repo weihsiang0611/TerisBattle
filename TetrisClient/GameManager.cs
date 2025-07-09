@@ -44,8 +44,8 @@ namespace TetrisClient
             }
             BoardUpdated?.Invoke(_gameBoard);
 
-            GenerateNewTetromino();
-            _timer.Start();
+            // GenerateNewTetromino();
+            // _timer.Start();
         }
 
         private void Timer_Tick(object sender, EventArgs e)
@@ -61,12 +61,12 @@ namespace TetrisClient
             }
 
             // Automatic falling
-            if (!MoveTetromino(0, 1)) // Try to move down
-            {
-                LockTetromino();
-                ClearLines();
-                GenerateNewTetromino();
-            }
+            // if (!MoveTetromino(0, 1)) // Try to move down
+            // {
+            //     LockTetromino();
+            //     ClearLines();
+            //     GenerateNewTetromino();
+            // }
         }
 
         private void GenerateNewTetromino()

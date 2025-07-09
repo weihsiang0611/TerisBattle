@@ -27,7 +27,7 @@ namespace TetrisClient
             _gameManager = new GameManager();
             _gameManager.TimeChanged += (time) => TimeText.Text = time;
             _gameManager.ScoreChanged += (score) => ScoreText.Text = score.ToString();
-            _gameManager.NewTetromino += DrawTetromino;
+            
             _gameManager.BoardUpdated += DrawBoard;
 
             _serverConnection = new ServerConnection("127.0.0.1", 12345);
@@ -41,19 +41,15 @@ namespace TetrisClient
             {
                 case Key.Left:
                     message = "move_left";
-                    _gameManager.MoveTetromino(-1, 0);
                     break;
                 case Key.Right:
                     message = "move_right";
-                    _gameManager.MoveTetromino(1, 0);
                     break;
                 case Key.Down:
                     message = "move_down";
-                    _gameManager.MoveTetromino(0, 1);
                     break;
                 case Key.Up:
                     message = "rotate";
-                    _gameManager.RotateTetromino();
                     break;
                 case Key.Space:
                     message = "hard_drop";
@@ -94,9 +90,29 @@ namespace TetrisClient
             // For example, if the server sends board updates or score updates.
             Dispatcher.Invoke(() =>
             {
-                // Example: Update a status label or process game state
-                // StatusText.Text = "Server: " + message;
-                Console.WriteLine($"Received from server: {message}");
+                // The server sends the board state as a flat string of 200 characters ('0' or '1').
+                const int BoardRows = 20;
+                const int BoardCols = 10;
+
+                if (message.Length == BoardRows * BoardCols)
+                {
+                    int[,] newBoard = new int[BoardRows, BoardCols];
+                    for (int r = 0; r < BoardRows; r++)
+                    {
+                        for (int c = 0; c < BoardCols; c++)
+                        {
+                            // The character '0' has ASCII value 48. '1' is 49.
+                            // Subtracting '0' converts the character to its integer equivalent.
+                            newBoard[r, c] = message[r * BoardCols + c] - '0';
+                        }
+                    }
+                    _gameManager._gameBoard = newBoard; // Update the game manager's board
+                    DrawBoard(newBoard); // Redraw the entire board
+                }
+                else
+                {
+                    Console.WriteLine($"Received from server (unhandled): {message}");
+                }
             });
         }
 
@@ -130,9 +146,7 @@ namespace TetrisClient
 
         private void DrawBoard(int[,] board)
         {
-            // Clear only the locked blocks, not the current tetromino
-            // This is a simplified approach, a more robust solution would manage layers
-            GameCanvas.Children.Clear();
+            GameCanvas.Children.Clear(); // Clear everything
 
             for (int r = 0; r < board.GetLength(0); r++)
             {
@@ -144,7 +158,7 @@ namespace TetrisClient
                         {
                             Width = BlockSize,
                             Height = BlockSize,
-                            Fill = Brushes.Gray, // Color for locked blocks
+                            Fill = Brushes.Blue, // Use blue for all '1's (falling or locked)
                             Stroke = Brushes.Black,
                             StrokeThickness = 1
                         };

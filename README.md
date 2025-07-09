@@ -29,14 +29,12 @@ This project implements a Tetris game with a C++ backend handling game logic and
 
 ## Known Issues / Pending Tasks (To be addressed)
 
-1.  **Frontend Visual Update for Hard Drop**: Although the backend processes `hard_drop` and sends the updated board state, the C# frontend currently does not parse this incoming board state and update its display accordingly. This is the primary reason why hard drop has no visual effect on the client.
+1.  **Frontend Visual Update for Hard Drop**: **Resolved.** The C# frontend now correctly parses the incoming board state (including the falling tetromino) and updates its display accordingly.
 2.  **Full Game Logic in C++ Backend**:
-    *   Implement `move_left`, `move_right`, `rotate`, and `soft_drop` logic for tetrominoes.
+    *   `move_left`, `move_right`, `rotate`, and `soft_drop` logic for tetrominoes are now implemented.
     *   Implement continuous gravity/auto-drop for tetrominoes.
     *   Refine collision detection for all movements and rotations.
-3.  **Frontend Game State Parsing and Rendering**:
-    *   The C# client needs to parse the string representation of the board received from the C++ server.
-    *   The client's `GameManager` and UI (`DrawBoard`, `DrawTetromino`) need to be updated based on the received server state, rather than relying solely on local `_gameManager` updates.
+3.  **Frontend Game State Parsing and Rendering**: **Resolved.** The C# client now parses the string representation of the board received from the C++ server, and the UI is updated based on the received server state. The client no longer relies on local `_gameManager` updates for tetromino movement.
 4.  **Improved Communication Protocol**: The current board state string is very basic. A more robust protocol might involve sending:
     *   The full board state.
     *   The current falling tetromino's shape and position separately.
@@ -44,6 +42,7 @@ This project implements a Tetris game with a C++ backend handling game logic and
     *   Score, lines cleared, time, etc.
 5.  **Game Over Handling**: Implement proper game over detection and display on both backend and frontend.
 6.  **Game Start/Reset Logic**: Ensure a clean game start and reset on both sides.
+7.  **Optimization: Spacebar Instant Drop**: Ensure the "spacebar" functionality (instant drop to the bottom) is fully optimized and visually clear. (This is a placeholder for the user's request, I will clarify with them later).
 
 ## Setup and Running the Project
 

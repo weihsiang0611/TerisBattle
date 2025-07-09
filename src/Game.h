@@ -28,6 +28,10 @@ private:
     void lockTetromino();
     void clearLines();
     void hardDrop();
+    void moveLeft();
+    void moveRight();
+    void softDrop();
+    void rotate();
     std::string getBoardStateAsString();
     void sendBoardState();
 
@@ -39,6 +43,7 @@ private:
     std::vector<std::vector<int>> currentTetrominoShape;
     int currentTetrominoX;
     int currentTetrominoY;
+    std::chrono::steady_clock::time_point lastDropTime;
 };
 
 #endif // GAME_H

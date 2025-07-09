@@ -38,19 +38,58 @@ public class ServerConnection
 
     private async Task ReceiveMessagesAsync()
     {
-        byte[] buffer = new byte[4096];
+        byte[] singleByteBuffer = new byte[1]; // Buffer for reading one byte at a time
+        byte[] buffer = new byte[4096]; // Max message size
+
         while (true)
         {
             try
             {
-                int bytesRead = await _stream.ReadAsync(buffer, 0, buffer.Length);
-                if (bytesRead == 0)
+                // Read until we find the ':' delimiter for the length prefix
+                StringBuilder lengthBuilder = new StringBuilder();
+                int bytesReadCount;
+                while ((bytesReadCount = await _stream.ReadAsync(singleByteBuffer, 0, 1)) > 0)
                 {
-                    // Server disconnected
+                    char c = (char)singleByteBuffer[0];
+                    if (c == ':')
+                    {
+                        break;
+                    }
+                    lengthBuilder.Append(c);
+                }
+
+                if (bytesReadCount == 0) // Stream ended unexpectedly or server disconnected
+                {
                     break;
                 }
-                string message = Encoding.UTF8.GetString(buffer, 0, bytesRead);
-                MessageReceived?.Invoke(message);
+
+                int messageLength;
+                if (!int.TryParse(lengthBuilder.ToString(), out messageLength))
+                {
+                    Console.WriteLine("Error: Could not parse message length.");
+                    continue; // Skip this message
+                }
+
+                // Read the actual message content
+                byte[] messageBytes = new byte[messageLength];
+                int totalBytesRead = 0;
+                while (totalBytesRead < messageLength)
+                {
+                    int bytesRead = await _stream.ReadAsync(messageBytes, totalBytesRead, messageLength - totalBytesRead);
+                    if (bytesRead == 0)
+                    {
+                        // Server disconnected or stream ended prematurely
+                        Console.WriteLine("Error: Server disconnected or stream ended prematurely while reading message content.");
+                        break;
+                    }
+                    totalBytesRead += bytesRead;
+                }
+
+                if (totalBytesRead == messageLength)
+                {
+                    string message = Encoding.UTF8.GetString(messageBytes, 0, messageLength);
+                    MessageReceived?.Invoke(message);
+                }
             }
             catch (Exception ex)
             {

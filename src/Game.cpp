@@ -47,7 +47,8 @@ const std::vector<std::vector<std::vector<int>>> TETROMINO_SHAPES = {
 
 Game::Game() : isRunning(true), listenSocket(INVALID_SOCKET), clientSocket(INVALID_SOCKET),
                board(BOARD_HEIGHT, std::vector<int>(BOARD_WIDTH, 0)),
-               currentTetrominoX(0), currentTetrominoY(0) {
+               currentTetrominoX(0), currentTetrominoY(0),
+               lastDropTime(std::chrono::steady_clock::now()) { // Initialize lastDropTime
     WSADATA wsaData;
     int result = WSAStartup(MAKEWORD(2, 2), &wsaData);
     if (result != 0) {
@@ -236,6 +237,42 @@ void Game::hardDrop() {
     lockTetromino();
 }
 
+void Game::moveLeft() {
+    if (!checkCollision(currentTetrominoX - 1, currentTetrominoY, currentTetrominoShape)) {
+        currentTetrominoX--;
+    }
+}
+
+void Game::moveRight() {
+    if (!checkCollision(currentTetrominoX + 1, currentTetrominoY, currentTetrominoShape)) {
+        currentTetrominoX++;
+    }
+}
+
+void Game::softDrop() {
+    if (!checkCollision(currentTetrominoX, currentTetrominoY + 1, currentTetrominoShape)) {
+        currentTetrominoY++;
+    } else {
+        lockTetromino();
+    }
+}
+
+void Game::rotate() {
+    // Create a temporary rotated shape
+    std::vector<std::vector<int>> rotatedShape(currentTetrominoShape[0].size(), std::vector<int>(currentTetrominoShape.size()));
+    for (size_t i = 0; i < currentTetrominoShape.size(); ++i) {
+        for (size_t j = 0; j < currentTetrominoShape[i].size(); ++j) {
+            rotatedShape[j][currentTetrominoShape.size() - 1 - i] = currentTetrominoShape[i][j];
+        }
+    }
+
+    // Check collision with the rotated shape
+    if (!checkCollision(currentTetrominoX, currentTetrominoY, rotatedShape)) {
+        currentTetrominoShape = rotatedShape;
+    }
+    // Note: For a more robust Tetris, wall kicks would be implemented here
+}
+
 std::string Game::getBoardStateAsString() {
     std::string state = "";
     // First, add the current tetromino to a temporary board for sending
@@ -271,13 +308,29 @@ void Game::processInput(char* buffer) {
     std::cout << "Received command: " << buffer << std::endl;
     if (strcmp(buffer, "hard_drop") == 0) {
         hardDrop();
+    } else if (strcmp(buffer, "move_left") == 0) {
+        moveLeft();
+    } else if (strcmp(buffer, "move_right") == 0) {
+        moveRight();
+    } else if (strcmp(buffer, "move_down") == 0) { // soft_drop is "move_down" from client
+        softDrop();
+    } else if (strcmp(buffer, "rotate") == 0) {
+        rotate();
     }
-    // Add other movement/rotation logic here later
+    // After processing any input, send the updated board state
+    sendBoardState();
 }
 
 void Game::update() {
-    // This update is primarily for sending the state after an input.
-    // Real game loop gravity and other updates would go here.
+    // Implement continuous gravity/auto-drop
+    auto now = std::chrono::steady_clock::now();
+    // Drop every 500 milliseconds (0.5 seconds)
+    if (std::chrono::duration_cast<std::chrono::milliseconds>(now - lastDropTime).count() >= 500) {
+        softDrop(); // Attempt to move down
+        lastDropTime = now; // Reset timer
+    }
+    // After any update (input or auto-drop), send the updated board state
+    sendBoardState();
 }
 
 void Game::render() {
